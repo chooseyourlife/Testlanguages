@@ -31,19 +31,12 @@ def browser(request):
         options = Options()
         options.add_experimental_option('prefs', {'intl.accept_languages': user_language})
         browser = webdriver.Chrome(options=options)
-
     elif browser_name == "firefox":
         print("\nstart firefox browser for test..")
         from selenium.webdriver.firefox.options import Options
-        from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
-
-        # Создаем профиль и устанавливаем язык
-        profile = FirefoxProfile()
-        profile.set_preference("intl.accept_languages", user_language)
-
         options = Options()
-        browser = webdriver.Firefox(firefox_profile=profile, options=options)
-
+        options.set_preference("intl.accept_languages", user_language)
+        browser = webdriver.Firefox(options=options)
     else:
         raise pytest.UsageError("--browser_name should be chrome or firefox")
 
