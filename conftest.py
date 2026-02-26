@@ -1,0 +1,56 @@
+import pytest
+from selenium import webdriver
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        '--browser_name',
+        action='store',
+        default='chrome',
+        help="Choose browser: chrome or firefox")
+
+    parser.addoption(
+        "--language",
+        action="store",
+        default="ru",
+        help="Choose browser language: en, ru, es, fr, de, etc."
+    )
+
+
+@pytest.fixture(scope="function")
+def browser(request):
+    # Получаем значения параметров
+    browser_name = request.config.getoption("browser_name")
+    user_language = request.config.getoption("language")
+
+    browser = None
+
+    if browser_name == "chrome":
+        print("\nstart chrome browser for test..")
+        from selenium.webdriver.chrome.options import Options
+        options = Options()
+        options.add_experimental_option('prefs', {'intl.accept_languages': user_language})
+        browser = webdriver.Chrome(options=options)
+
+    elif browser_name == "firefox":
+        print("\nstart firefox browser for test..")
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+
+        # Создаем профиль и устанавливаем язык
+        profile = FirefoxProfile()
+        profile.set_preference("intl.accept_languages", user_language)
+
+        options = Options()
+        browser = webdriver.Firefox(firefox_profile=profile, options=options)
+
+    else:
+        raise pytest.UsageError("--browser_name should be chrome or firefox")
+
+    # Добавляем неявное ожидание для стабильности
+    browser.implicitly_wait(5)
+
+    yield browser
+
+    print("\nquit browser..")
+    browser.quit()
